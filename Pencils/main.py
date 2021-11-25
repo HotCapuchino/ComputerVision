@@ -140,7 +140,8 @@ if len(img_options) > TARGET_PENCILS_AMOUNT:
     failed = True
 else:
     recognition_percent = (len(img_options) / TARGET_PENCILS_AMOUNT) * 100 
-    print(f'Recognized: {recognition_percent}%')
+    print(f'Recognized: {len(img_options)}')
+    print(f'Recognition percent: {recognition_percent}%')
     if recognition_percent != 100:
         failed = True
 
