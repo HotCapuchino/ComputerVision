@@ -7,9 +7,9 @@ if not cam.isOpened():
     raise RuntimeError('Camera doesnt work')
 
 cv2.namedWindow('camera', cv2.WINDOW_KEEPRATIO)
-cv2.namedWindow('red', cv2.WINDOW_KEEPRATIO)
-cv2.namedWindow('green', cv2.WINDOW_KEEPRATIO)
-cv2.namedWindow('yellow', cv2.WINDOW_KEEPRATIO)
+# cv2.namedWindow('red', cv2.WINDOW_KEEPRATIO)
+# cv2.namedWindow('green', cv2.WINDOW_KEEPRATIO)
+# cv2.namedWindow('yellow', cv2.WINDOW_KEEPRATIO)
 
 balls_color_bondaries = [
     [(44, 100, 150), (85, 255, 255), 'green'], # green
@@ -21,6 +21,8 @@ order = []
 detected = []
 remembered = False
 was_printed = False
+confirmed = False
+shown_order = []
 
 while True:
     _, image = cam.read()
@@ -28,14 +30,14 @@ while True:
     blurred = cv2.GaussianBlur(image, (11, 11), 0)
     hsv_image = cv2.cvtColor(blurred, cv2.COLOR_BGR2HSV)
 
-    if not remembered: 
+    if not remembered or confirmed: 
         detected = []
         for color_bound in balls_color_bondaries:
             mask = cv2.inRange(hsv_image, color_bound[0], color_bound[1])
             mask = cv2.erode(mask, None, iterations=2)
             mask = cv2.dilate(mask, None, iterations=2)
 
-            cv2.imshow(color_bound[2], mask)
+            # cv2.imshow(color_bound[2], mask)
 
             contours, _ = cv2.findContours(mask.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
 
@@ -56,6 +58,18 @@ while True:
             order.append(ball['color'])
         was_printed = True
 
+    if confirmed and len(detected) == 3:
+        detected = sorted(detected, key=lambda item: item['center'][0])
+        shown_order = []
+        for ball in detected:
+            shown_order.append(ball['color'])
+        print(shown_order, order, end='\n')
+        if shown_order != order:
+            print('Wrong order!')
+        else:
+            print('Right order!')
+        was_printed = True
+
     cv2.imshow('camera', image)
  
     #
@@ -71,6 +85,9 @@ while True:
         remembered = True
     if key == ord('p'):
         was_printed = False
+    if key == ord('c'):
+        was_printed = False
+        confirmed = True
 
 cam.release()
 cv2.destroyAllWindows()
